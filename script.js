@@ -1,15 +1,16 @@
-let x = 0;
-
-document.addEventListener('DOMContentLoaded', (event) => {
-  const myText = document.getElementById('myText');
-  const myButton = document.getElementById('myButton');
-  if (myButton) {
-    myButton.addEventListener('click', Counter);
-  }
-});
-
-function Counter()
-{
-  x = x + 1;
-  myText.textContent = x;
-}
+(() => {
+  let clickCount = 0;
+  
+  document.addEventListener('DOMContentLoaded', () => {
+    const textDisplay = document.getElementById('myText');
+    const countButton = document.getElementById('myButton');
+    
+    if (countButton && textDisplay) {
+      textDisplay.textContent = clickCount;
+      countButton.addEventListener('click', () => {
+        clickCount++;
+        textDisplay.textContent = clickCount;
+      });
+    }
+  });
+})();
