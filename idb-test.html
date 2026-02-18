@@ -40,7 +40,7 @@
     
     transaction.oncomplete = () => {
       document.getElementById('result').innerText = val;
-      document.getElementById('input').text = '';
+      document.getElementById('input').value = '';
       alert("Saved!");
     };
   }
