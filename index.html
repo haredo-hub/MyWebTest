@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Pocket Pet</title>
+    <style>
+        :root {
+            --bg-color: #f0f0f7;
+            --card-bg: #ffffff;
+            --primary: #5856d6;
+            --danger: #ff3b30;
+            --success: #34c759;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #app {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            text-align: center;
+        }
+        .pet-screen {
+            background: var(--card-bg);
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+        .stat-box {
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .stat-value {
+            display: block;
+            font-size: 24px;
+            color: var(--primary);
+        }
+        .pet-avatar {
+            font-size: 80px;
+            margin: 20px 0;
+            display: block;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        button {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 15px;
+            background: var(--primary);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        button:active { opacity: 0.7; }
+        .hidden { display: none; }
+        input {
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            width: 80%;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <!-- Onboarding Screen -->
+    <div id="setup-screen" class="pet-screen">
+        <h2>Adopt a Pet</h2>
+        <input type="text" id="pet-name-input" placeholder="Enter pet name...">
+        <button onclick="startApp()">Start</button>
+    </div>
+
+    <!-- Main Game Screen -->
+    <div id="game-screen" class="pet-screen hidden">
+        <h2 id="display-name">Pet Name</h2>
+        <div class="stats">
+            <div class="stat-box">HUNGER<span id="hunger-val" class="stat-value">100</span></div>
+            <div class="stat-box">CLEAN<span id="clean-val" class="stat-value">100</span></div>
+        </div>
+        <div id="pet-emoji" class="pet-avatar">🐱</div>
+        <div class="controls">
+            <button onclick="feedPet()">Feed 🍖</button>
+            <button onclick="cleanPet()">Clean 🧼</button>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
