@@ -4,106 +4,79 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Pocket Pet</title>
+    <title>SquatPet Pro</title>
+    <link rel="stylesheet" href="style.css"> <!-- Optional: Move CSS here if it gets too long -->
     <style>
-        :root {
-            --bg-color: #f0f0f7;
-            --card-bg: #ffffff;
-            --primary: #5856d6;
-            --danger: #ff3b30;
-            --success: #34c759;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg-color);
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-        }
-        #app {
-            width: 100%;
-            max-width: 400px;
-            padding: 20px;
-            text-align: center;
-        }
-        .pet-screen {
-            background: var(--card-bg);
-            border-radius: 30px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-        .stats {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 20px;
-        }
-        .stat-box {
-            font-weight: bold;
-            font-size: 14px;
-        }
-        .stat-value {
-            display: block;
-            font-size: 24px;
-            color: var(--primary);
-        }
-        .pet-avatar {
-            font-size: 80px;
-            margin: 20px 0;
-            display: block;
-        }
-        .controls {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
-        button {
-            padding: 15px 25px;
-            border: none;
-            border-radius: 15px;
-            background: var(--primary);
-            color: white;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
-        }
-        button:active { opacity: 0.7; }
+        :root { --bg: #f2f2f7; --card: #fff; --accent: #5856d6; --gold: #ffcc00; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        #app { width: 100%; max-width: 420px; padding: 20px; box-sizing: border-box; }
+        .screen { background: var(--card); border-radius: 35px; padding: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); position: relative; text-align: center; }
+        
+        /* Pet Assembly Styles */
+        .pet-container { position: relative; width: 200px; height: 200px; margin: 20px auto; }
+        .pet-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: contain; background-repeat: no-repeat; }
+        
+        .stat-bar { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; font-size: 14px; }
+        .coin-btn { background: var(--gold); color: #000; border: none; padding: 12px; border-radius: 12px; width: 100%; font-weight: bold; margin-top: 10px; }
+        .dead-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); border-radius: 35px; color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
+        
         .hidden { display: none; }
-        input {
-            padding: 15px;
-            border-radius: 10px;
-            border: 1px solid #ddd;
-            width: 80%;
-            margin-bottom: 10px;
-        }
+        button:disabled { opacity: 0.5; }
     </style>
 </head>
 <body>
 
 <div id="app">
-    <!-- Onboarding Screen -->
-    <div id="setup-screen" class="pet-screen">
-        <h2>Adopt a Pet</h2>
-        <input type="text" id="pet-name-input" placeholder="Enter pet name...">
-        <button onclick="startApp()">Start</button>
+    <!-- 1. CREATION SCREEN -->
+    <div id="setup-screen" class="screen">
+        <h2>Create Your Pet</h2>
+        <div class="pet-container" id="preview-container">
+            <div id="layer-body" class="pet-layer"></div>
+            <div id="layer-eyes" class="pet-layer"></div>
+            <div id="layer-mouth" class="pet-layer"></div>
+        </div>
+        <div class="controls">
+            <p>Body: <button onclick="changePart('body', 1)">Next</button></p>
+            <p>Eyes: <button onclick="changePart('eyes', 1)">Next</button></p>
+            <p>Mouth: <button onclick="changePart('mouth', 1)">Next</button></p>
+        </div>
+        <input type="text" id="pet-name" placeholder="Pet Name" style="width:80%; padding:10px; margin:10px;">
+        <button onclick="startApp()" style="background:var(--accent); color:white; border:none; padding:15px; border-radius:10px; width:100%;">Adopt Pet</button>
     </div>
 
-    <!-- Main Game Screen -->
-    <div id="game-screen" class="pet-screen hidden">
-        <h2 id="display-name">Pet Name</h2>
-        <div class="stats">
-            <div class="stat-box">HUNGER<span id="hunger-val" class="stat-value">100</span></div>
-            <div class="stat-box">CLEAN<span id="clean-val" class="stat-value">100</span></div>
+    <!-- 2. GAME SCREEN -->
+    <div id="game-screen" class="screen hidden">
+        <div class="stat-bar">
+            <span>🥩 <span id="full-val">100</span>%</span>
+            <span>🧼 <span id="clean-val">100</span>%</span>
+            <span>🎂 Age: <span id="age-val">0</span>d</span>
         </div>
-        <div id="pet-emoji" class="pet-avatar">🐱</div>
-        <div class="controls">
-            <button onclick="feedPet()">Feed 🍖</button>
-            <button onclick="cleanPet()">Clean 🧼</button>
+        
+        <div class="pet-container" id="main-pet-view" style="cursor: pointer;">
+            <div id="view-body" class="pet-layer"></div>
+            <div id="view-eyes" class="pet-layer"></div>
+            <div id="view-mouth" class="pet-layer"></div>
         </div>
+
+        <button id="feed-btn" onclick="feedPet()">Feed (1 Coin)</button>
+        <button class="coin-btn" onclick="openExercise()">🏋️ Collect Coins</button>
+        <button onclick="deleteProgress()" style="margin-top:20px; background:none; color:red; border:none; font-size:12px;">Delete Progress</button>
+
+        <!-- DEATH SCREEN (Nested) -->
+        <div id="death-screen" class="dead-overlay hidden">
+            <h1>🪦</h1>
+            <h2 id="death-msg">Pet Name has passed</h2>
+            <p>Age: <span id="final-age"></span> Days</p>
+            <button onclick="deleteProgress()" style="background:white; color:black; padding:10px 20px; border-radius:10px; border:none;">Start New Life</button>
+        </div>
+    </div>
+
+    <!-- 3. EXERCISE OVERLAY -->
+    <div id="exercise-screen" class="screen hidden" style="position:fixed; top:20px; left:20px; right:20px; z-index:200;">
+        <h2>SQUAT TIME</h2>
+        <p>Hold phone with arms extended!</p>
+        <h1 style="font-size:60px;"><span id="squat-count">0</span> / 10</h1>
+        <button onclick="closeExercise()" style="background:black; color:white; width:100%; padding:15px; border-radius:10px;">Stop</button>
     </div>
 </div>
 
