@@ -24,35 +24,51 @@ let sessionSquats = 0;
 let phase = 'standing';
 
 async function requestMotionPermission() {
+    // 1. Check if the browser supports the permission API (iOS 13+)
     if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-        const response = await DeviceMotionEvent.requestPermission();
-        if (response === 'granted') {
-            window.addEventListener('devicemotion', handleMotion);
-            alert("Sensors Ready!");
+        try {
+            // This MUST be the first line in the click handler
+            const permissionState = await DeviceMotionEvent.requestPermission();
+            
+            if (permissionState === 'granted') {
+                window.addEventListener('devicemotion', handleMotion, true);
+                alert("Sensors Active! You can now start squats.");
+            } else {
+                alert("Permission denied. Enable 'Motion & Orientation' in Safari settings.");
+            }
+        } catch (error) {
+            alert("Error: Please tap the button again directly.");
+            console.error(error);
         }
     } else {
-        window.addEventListener('devicemotion', handleMotion);
+        // Android or older iOS
+        window.addEventListener('devicemotion', handleMotion, true);
+        alert("Sensors active on this device.");
     }
 }
 
+// Ensure handleMotion is robust
 function handleMotion(e) {
     if (document.getElementById('exercise-screen').classList.contains('hidden')) return;
+
+    // Use absolute value to handle phone being held at different angles
     let y = e.accelerationIncludingGravity.y;
     
-    if (phase === 'standing' && y < 5) {
+    // Squat detection: Down is low Y, Up is high Y
+    if (phase === 'standing' && y < 4) {
         phase = 'down';
-    } else if (phase === 'down' && y > 10) {
+    } else if (phase === 'down' && y > 9) {
         phase = 'standing';
         sessionSquats++;
+        // Update UI immediately
         document.getElementById('squat-count').innerText = sessionSquats;
         
         if (sessionSquats >= 10) {
             pet.coins += 1;
             sessionSquats = 0;
             document.getElementById('squat-count').innerText = "0";
+            document.getElementById('coin-val').innerText = pet.coins; // Direct UI update
             saveGame();
-            updateUI();
-            if (navigator.vibrate) navigator.vibrate(200);
         }
     }
 }
