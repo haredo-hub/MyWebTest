@@ -143,37 +143,70 @@ function feedPet() {
 }
 
 // Swipe to clean
-// script.js updates
-let touchStartX = 0;
+// Add this function to script.js
+function initSwipeCleaning() {
+    const petView = document.getElementById('main-pet-view');
+    let touchStartX = 0;
 
-const petView = document.getElementById('main-pet-view');
+    // Check if element exists to prevent the crash
+    if (!petView) return;
 
-// Prevent Safari from scrolling while you are trying to clean the pet
-petView.addEventListener('touchstart', (e) => {
-    touchStartX = e.touches[0].clientX;
-}, { passive: false });
+    petView.addEventListener('touchstart', (e) => {
+        touchStartX = e.touches.clientX;
+    }, { passive: false });
 
-petView.addEventListener('touchmove', (e) => {
-    // This stops the "rubber-band" scroll on iPhone so the swipe works
-    e.preventDefault(); 
-    
-    let currentX = e.touches[0].clientX;
-    let distance = Math.abs(currentX - touchStartX);
+    petView.addEventListener('touchmove', (e) => {
+        // Prevent scrolling while cleaning
+        e.preventDefault(); 
+        
+        let currentX = e.touches.clientX;
+        let distance = Math.abs(currentX - touchStartX);
 
-    // If the finger moves more than 30 pixels, it counts as a clean "scrub"
-    if (distance > 30) {
-        if (!pet.isDead) {
-            pet.clean = Math.min(100, pet.clean + 2); // Faster cleaning
-            updateUI();
-            // Reset start point so you have to keep moving to keep cleaning
-            touchStartX = currentX; 
-            
-            // Play sparkle sound occasionally (every few scrubs)
-            if (Math.floor(pet.clean) % 5 === 0) playSound('clean');
+        if (distance > 30) {
+            if (!pet.isDead) {
+                pet.clean = Math.min(100, pet.clean + 2);
+                updateUI();
+                touchStartX = currentX; 
+                
+                // Play sound every 5% cleaned
+                if (Math.floor(pet.clean) % 5 === 0) playSound('clean');
+            }
         }
-    }
-}, { passive: false });
+    }, { passive: false });
+}
 
+// UPDATE your startApp function to include the call:
+function startApp() {
+    const nameInput = document.getElementById('pet-name').value;
+    if (!nameInput) return alert("Give your pet a name!");
+    
+    pet.name = nameInput;
+    pet.fullness = 50; // Start at 50%
+    pet.clean = 50;    // Start at 50%
+    
+    document.getElementById('setup-screen').classList.add('hidden');
+    document.getElementById('game-screen').classList.remove('hidden');
+    
+    initSwipeCleaning(); // Start the swipe listener now that screen is visible
+    saveGame();
+}
+
+// ALSO UPDATE your window.onload to include it for returning users:
+window.onload = () => {
+    const saved = localStorage.getItem(SAVE_KEY);
+    if (saved) {
+        pet = JSON.parse(saved);
+        updateVisuals();
+        calculateState();
+        document.getElementById('setup-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        
+        initSwipeCleaning(); // Start listener for returning users
+        setInterval(calculateState, 10000);
+    } else {
+        updateVisuals();
+    }
+};
 
 // Playing sound (SFX)
 function playSound(name) {
@@ -191,17 +224,5 @@ function playSound(name) {
 }
 
 
-// 5. BOOTSTRAP
-window.onload = () => {
-    const saved = localStorage.getItem(SAVE_KEY);
-    if (saved) {
-        pet = JSON.parse(saved);
-        updateVisuals();
-        calculateState();
-        document.getElementById('setup-screen').classList.add('hidden');
-        document.getElementById('game-screen').classList.remove('hidden');
-        setInterval(calculateState, 10000);
-    } else { updateVisuals(); }
-};
 
 document.addEventListener('visibilitychange', () => { if(document.hidden) saveGame(); else calculateState(); });
