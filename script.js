@@ -177,9 +177,19 @@ petView.addEventListener('touchmove', (e) => {
 
 // Playing sound (SFX)
 function playSound(name) {
-    sounds[name].currentTime = 0; // Reset to start
-    sounds[name].play().catch(e => console.log("Audio blocked until user clicks"));
+    // Check if the sound exists and has loaded a source
+    if (sounds[name] && sounds[name].src.includes('.mp3')) {
+        sounds[name].currentTime = 0;
+        sounds[name].play().catch(e => {
+            // This catches the 'User must click first' browser error
+            console.warn("Audio playback blocked or file missing:", name);
+        });
+    } else {
+        // Just log it so you know the logic triggered
+        console.log("🔊 Sound Triggered:", name, "(File not found yet)");
+    }
 }
+
 
 // 5. BOOTSTRAP
 window.onload = () => {
