@@ -74,6 +74,10 @@
     <!-- 3. EXERCISE OVERLAY -->
     <div id="exercise-screen" class="screen hidden" style="position:fixed; top:20px; left:20px; right:20px; z-index:200;">
         <h2>SQUAT TIME</h2>
+        <!-- This button is mandatory for iPhone Safari/Chrome -->
+        <button onclick="requestMotionPermission()" style="background:green; margin-bottom:10px;">
+            1. Tap to Enable Sensors
+        </button>
         <p>Hold phone with arms extended!</p>
         <h1 style="font-size:60px;"><span id="squat-count">0</span> / 10</h1>
         <button onclick="closeExercise()" style="background:black; color:white; width:100%; padding:15px; border-radius:10px;">Stop</button>
