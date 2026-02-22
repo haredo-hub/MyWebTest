@@ -45,21 +45,30 @@
     </div>
 
     <!-- 2. GAME SCREEN -->
-    <div id="game-screen" class="screen hidden">
+    <!-- MAIN GAME SCREEN -->
+<div id="game-screen" class="screen hidden">
+    <!-- Moved HUD to the very top, outside of the pet's flex area -->
+    <div id="hud-top" style="background: #f8f8ff; border-radius: 20px; padding: 10px; margin-bottom: 15px; border: 1px solid #eee;">
         <div class="stat-bar">
             <span>🥩 <span id="full-val">100</span>%</span>
             <span>🧼 <span id="clean-val">100</span>%</span>
-            <span>🎂 Age: <span id="age-val">0</span>d</span>
+            <span>🎂 <span id="age-val">0</span>d</span>
         </div>
-        
-        <div class="pet-container" id="main-pet-view" style="cursor: pointer;">
-            <div id="view-body" class="pet-layer"></div>
-            <div id="view-eyes" class="pet-layer"></div>
-            <div id="view-mouth" class="pet-layer"></div>
+        <div style="font-weight: 800; font-size: 18px; color: #333; margin-top: 5px;">
+            Coins: 💰 <span id="coin-val" style="color: #d4af37;">0</span>
         </div>
+    </div>
 
-        <button id="feed-btn" onclick="feedPet()">Feed (1 Coin)</button>
-        <button class="coin-btn" onclick="openExercise()">🏋️ Collect Coins</button>
+    <div class="pet-container" id="main-pet-view" style="z-index: 5;">
+        <div id="view-body" class="pet-layer"></div>
+        <div id="view-eyes" class="pet-layer"></div>
+        <div id="view-mouth" class="pet-layer"></div>
+    </div>
+
+    <button id="feed-btn" class="primary-btn" onclick="feedPet()">Feed Pet (1 Coin)</button>
+    <button class="coin-btn" onclick="openExercise()">🏋️ Collect Coins</button>
+</div>
+
         <button onclick="deleteProgress()" style="margin-top:20px; background:none; color:red; border:none; font-size:12px;">Delete Progress</button>
 
         <!-- DEATH SCREEN (Nested) -->
