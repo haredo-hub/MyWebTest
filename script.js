@@ -8,11 +8,17 @@ const assets = {
     mouth: ['assets/mouth1.png', 'assets/mouth2.png']
 };
 
+const sounds = {
+    feed: new Audio('assets/feed.mp3'),
+    clean: new Audio('assets/sparkle.mp3'),
+    coin: new Audio('assets/coin.mp3')
+};
+
 let pet = {
     name: "Pet",
     parts: { body: 0, eyes: 0, mouth: 0 },
-    fullness: 100,
-    clean: 100,
+    fullness: 50,
+    clean: 50,
     coins: 0,
     birthday: Date.now(),
     lastSaved: Date.now(),
@@ -50,28 +56,32 @@ async function requestMotionPermission() {
 // Ensure handleMotion is robust
 function handleMotion(e) {
     if (document.getElementById('exercise-screen').classList.contains('hidden')) return;
-
-    // Use absolute value to handle phone being held at different angles
-    let y = e.accelerationIncludingGravity.y;
     
-    // Squat detection: Down is low Y, Up is high Y
-    if (phase === 'standing' && y < 4) {
-        phase = 'down';
-    } else if (phase === 'down' && y > 9) {
+    // Use acceleration INCLUDING gravity for squat detection
+    let y = e.accelerationIncludingGravity.y;
+
+    // SENSITIVITY TWEAK:
+    // If you are standing still, Y is ~9.8. 
+    // When you drop into a squat, Y should fall below 5.
+    // When you push back up, Y should spike above 12.
+    
+    if (phase === 'standing' && y < 5) { 
+        phase = 'down'; 
+    } else if (phase === 'down' && y > 11.5) { // Threshold for "standing up"
         phase = 'standing';
         sessionSquats++;
-        // Update UI immediately
         document.getElementById('squat-count').innerText = sessionSquats;
         
         if (sessionSquats >= 10) {
-            pet.coins += 1;
-            sessionSquats = 0;
-            document.getElementById('squat-count').innerText = "0";
-            document.getElementById('coin-val').innerText = pet.coins; // Direct UI update
+            pet.coins++;
+            playSound('coin'); // New sound trigger
             saveGame();
+            updateUI();
+            sessionSquats = 0;
         }
     }
 }
+
 
 // 2. PET CUSTOMIZATION
 function changePart(type, dir) {
@@ -133,25 +143,43 @@ function feedPet() {
 }
 
 // Swipe to clean
-let sX = 0;
-document.getElementById('main-pet-view').addEventListener('touchstart', e => sX = e.touches.clientX);
-document.getElementById('main-pet-view').addEventListener('touchmove', e => {
-    if (Math.abs(e.touches.clientX - sX) > 30) {
-        pet.clean = Math.min(100, pet.clean + 1);
-        updateUI();
+// script.js updates
+let touchStartX = 0;
+
+const petView = document.getElementById('main-pet-view');
+
+// Prevent Safari from scrolling while you are trying to clean the pet
+petView.addEventListener('touchstart', (e) => {
+    touchStartX = e.touches[0].clientX;
+}, { passive: false });
+
+petView.addEventListener('touchmove', (e) => {
+    // This stops the "rubber-band" scroll on iPhone so the swipe works
+    e.preventDefault(); 
+    
+    let currentX = e.touches[0].clientX;
+    let distance = Math.abs(currentX - touchStartX);
+
+    // If the finger moves more than 30 pixels, it counts as a clean "scrub"
+    if (distance > 30) {
+        if (!pet.isDead) {
+            pet.clean = Math.min(100, pet.clean + 2); // Faster cleaning
+            updateUI();
+            // Reset start point so you have to keep moving to keep cleaning
+            touchStartX = currentX; 
+            
+            // Play sparkle sound occasionally (every few scrubs)
+            if (Math.floor(pet.clean) % 5 === 0) playSound('clean');
+        }
     }
-});
+}, { passive: false });
 
-function startApp() {
-    pet.name = document.getElementById('pet-name').value || "Pet";
-    document.getElementById('setup-screen').classList.add('hidden');
-    document.getElementById('game-screen').classList.remove('hidden');
-    saveGame();
+
+// Playing sound (SFX)
+function playSound(name) {
+    sounds[name].currentTime = 0; // Reset to start
+    sounds[name].play().catch(e => console.log("Audio blocked until user clicks"));
 }
-
-function deleteProgress() { if(confirm("Restart?")) { localStorage.removeItem(SAVE_KEY); location.reload(); } }
-function openExercise() { document.getElementById('exercise-screen').classList.remove('hidden'); sessionSquats=0; }
-function closeExercise() { document.getElementById('exercise-screen').classList.add('hidden'); }
 
 // 5. BOOTSTRAP
 window.onload = () => {
