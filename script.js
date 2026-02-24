@@ -141,8 +141,7 @@ function startApp() {
     const name = nameField.value;
     if (!name) return alert("Please name your pet!");
     pet.name = name;
-    nameField.blur();
-    nameField.disabled = true;
+    nameField.remove();
     document.getElementById('setup-screen').classList.add('hidden');
     document.getElementById('game-screen').classList.remove('hidden');
     initSwipe();
