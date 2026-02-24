@@ -69,13 +69,13 @@ function handleMotion(e) {
     */
 
      // Debug output
-    /*document.getElementById("dbg-ax").innerText = ax.toFixed(2);
+    document.getElementById("dbg-ax").innerText = ax.toFixed(2);
     document.getElementById("dbg-ay").innerText = ay.toFixed(2);
     document.getElementById("dbg-az").innerText = az.toFixed(2);
     document.getElementById("dbg-mag").innerText = magnitude.toFixed(2);
     document.getElementById("dbg-smooth").innerText = smoothed.toFixed(2);
     document.getElementById("dbg-phase").innerText = phase;
-    document.getElementById("dbg-count").innerText = sessionSquats;*/
+    document.getElementById("dbg-count").innerText = sessionSquats;
 
     // Squat logic (tune these)
     if (phase === "standing" && smoothed < 8.2) {
@@ -95,7 +95,6 @@ function handleMotion(e) {
             updateUI();
         }
     }
-}
 
 // --- CUSTOMIZATION ---
 function changePart(type, dir) {
