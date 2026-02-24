@@ -44,7 +44,7 @@ async function requestMotionPermission() {
 let sessionSquats = 0;
 let phase = 'standing';
 // --- SQUAT DETECTION (Filtering shaking) ---
-let smoothedY = 9.8; 
+let smoothed = 9.8; 
 const filterFactor = 0.1; // Lower = smoother (ignores shaking more)
 
 function handleMotion(e) {
@@ -68,6 +68,16 @@ function handleMotion(e) {
       Pushing up ≈ 11–13
     */
 
+     // Debug output
+    document.getElementById("dbg-ax").innerText = ax.toFixed(2);
+    document.getElementById("dbg-ay").innerText = ay.toFixed(2);
+    document.getElementById("dbg-az").innerText = az.toFixed(2);
+    document.getElementById("dbg-mag").innerText = magnitude.toFixed(2);
+    document.getElementById("dbg-smooth").innerText = smoothed.toFixed(2);
+    document.getElementById("dbg-phase").innerText = phase;
+    document.getElementById("dbg-count").innerText = sessionSquats;
+
+    // Squat logic (tune these)
     if (phase === "standing" && smoothed < 8.2) {
         phase = "down";
     }
@@ -75,7 +85,7 @@ function handleMotion(e) {
     if (phase === "down" && smoothed > 11.2) {
         phase = "standing";
         sessionSquats++;
-        document.getElementById("squat-count").innerText = sessionSquats;
+    }
 
         if (sessionSquats >= 10) {
             pet.coins++;
