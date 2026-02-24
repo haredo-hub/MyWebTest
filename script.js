@@ -45,31 +45,42 @@ let sessionSquats = 0;
 let phase = 'standing';
 // --- SQUAT DETECTION (Filtering shaking) ---
 let smoothedY = 9.8; 
-const filterFactor = 0.15; // Lower = smoother (ignores shaking more)
+const filterFactor = 0.1; // Lower = smoother (ignores shaking more)
 
 function handleMotion(e) {
     if (document.getElementById('exercise-screen').classList.contains('hidden')) return;
-
-    let rawY = e.accelerationIncludingGravity.y;
+    if (!e.accelerationIncludingGravity) return;
     
-    // Low-pass filter: smoothed = (old * 0.85) + (new * 0.15)
-    smoothedY = (smoothedY * (1 - filterFactor)) + (rawY * filterFactor);
+    const ax = e.accelerationIncludingGravity.x || 0;
+    const ay = e.accelerationIncludingGravity.y || 0;
+    const az = e.accelerationIncludingGravity.z || 0;
 
-    // Detecting a Squat Wave:
-    // Standing: smoothedY is ~9.8
-    // Down phase: smoothedY drops below 6.5
-    // Up phase: smoothedY spikes above 11.5
-    if (phase === 'standing' && smoothedY < 6.5) {
-        phase = 'down';
-    } else if (phase === 'down' && smoothedY > 11.5) {
-        phase = 'standing';
+    // Use total acceleration magnitude (orientation independent)
+    const magnitude = Math.sqrt(ax*ax + ay*ay + az*az);
+
+    // Smooth it
+    smoothed = (smoothed * (1 - filterFactor)) + (magnitude * filterFactor);
+
+    /*
+      Typical values:
+      Standing still ≈ 9.8
+      Going down ≈ 7–8
+      Pushing up ≈ 11–13
+    */
+
+    if (phase === "standing" && smoothed < 8.2) {
+        phase = "down";
+    }
+
+    if (phase === "down" && smoothed > 11.2) {
+        phase = "standing";
         sessionSquats++;
-        document.getElementById('squat-count').innerText = sessionSquats;
-        
+        document.getElementById("squat-count").innerText = sessionSquats;
+
         if (sessionSquats >= 10) {
             pet.coins++;
             sessionSquats = 0;
-            document.getElementById('squat-count').innerText = "0";
+            document.getElementById("squat-count").innerText = "0";
             saveGame();
             updateUI();
         }
