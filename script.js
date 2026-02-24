@@ -1,8 +1,16 @@
-const SAVE_KEY = 'vPet_Pro_Final_v1';
+const SAVE_KEY = 'vPet_Pro_Final_v2';
 const DECAY_TIME = 12 * 60 * 60 * 1000;
+
+// Update these to match your actual file names
+const assets = {
+    body: ['assets/body1.png', 'assets/body2.png'],
+    eyes: ['assets/eyes1.png', 'assets/eyes2.png'],
+    mouth: ['assets/mouth1.png', 'assets/mouth2.png']
+};
 
 let pet = {
     name: "Pet",
+    parts: { body: 0, eyes: 0, mouth: 0 },
     fullness: 50,
     clean: 50,
     coins: 0,
@@ -35,13 +43,29 @@ async function requestMotionPermission() {
 
 let sessionSquats = 0;
 let phase = 'standing';
+// --- SQUAT DETECTION (Filtering shaking) ---
+let smoothedY = 9.8; 
+const filterFactor = 0.15; // Lower = smoother (ignores shaking more)
+
 function handleMotion(e) {
-    let y = e.accelerationIncludingGravity.y;
-    if (phase === 'standing' && y < 5) phase = 'down';
-    else if (phase === 'down' && y > 11.5) {
+    if (document.getElementById('exercise-screen').classList.contains('hidden')) return;
+
+    let rawY = e.accelerationIncludingGravity.y;
+    
+    // Low-pass filter: smoothed = (old * 0.85) + (new * 0.15)
+    smoothedY = (smoothedY * (1 - filterFactor)) + (rawY * filterFactor);
+
+    // Detecting a Squat Wave:
+    // Standing: smoothedY is ~9.8
+    // Down phase: smoothedY drops below 6.5
+    // Up phase: smoothedY spikes above 11.5
+    if (phase === 'standing' && smoothedY < 6.5) {
+        phase = 'down';
+    } else if (phase === 'down' && smoothedY > 11.5) {
         phase = 'standing';
         sessionSquats++;
         document.getElementById('squat-count').innerText = sessionSquats;
+        
         if (sessionSquats >= 10) {
             pet.coins++;
             sessionSquats = 0;
@@ -50,6 +74,27 @@ function handleMotion(e) {
             updateUI();
         }
     }
+}
+
+// --- CUSTOMIZATION ---
+function changePart(type, dir) {
+    if (assets[type]) {
+        pet.parts[type] = (pet.parts[type] + dir) % assets[type].length;
+        updateVisuals();
+    }
+}
+
+function updateVisuals() {
+    ['preview', 'view'].forEach(p => {
+        // Only updates if images are actually present in the folder
+        const b = document.getElementById(`${p}-body`);
+        const e = document.getElementById(`${p}-eyes`);
+        const m = document.getElementById(`${p}-mouth`);
+        
+        if (assets.body[pet.parts.body]) b.style.backgroundImage = `url(${assets.body[pet.parts.body]})`;
+        if (assets.eyes[pet.parts.eyes]) e.style.backgroundImage = `url(${assets.eyes[pet.parts.eyes]})`;
+        if (assets.mouth[pet.parts.mouth]) m.style.backgroundImage = `url(${assets.mouth[pet.parts.mouth]})`;
+    });
 }
 
 // --- SWIPE CLEANING ---
@@ -75,12 +120,11 @@ function startApp() {
     const name = document.getElementById('pet-name-input').value;
     if (!name) return alert("Please name your pet!");
     pet.name = name;
-    pet.fullness = 50; // New pets start at 50%
-    pet.clean = 50;
     document.getElementById('setup-screen').classList.add('hidden');
     document.getElementById('game-screen').classList.remove('hidden');
     initSwipe();
     saveGame();
+    updateUI();
 }
 
 function updateUI() {
