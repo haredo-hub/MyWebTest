@@ -137,9 +137,12 @@ function initSwipe() {
 
 // --- CORE FUNCTIONS ---
 function startApp() {
-    const name = document.getElementById('pet-name-input').value;
+    const nameField = document.getElementById('pet-name-input')
+    const name = nameField.value;
     if (!name) return alert("Please name your pet!");
     pet.name = name;
+    nameField.blur();
+    nameField.disabled = true;
     document.getElementById('setup-screen').classList.add('hidden');
     document.getElementById('game-screen').classList.remove('hidden');
     initSwipe();
@@ -157,8 +160,8 @@ function updateUI() {
 function feedPet() {
     if (pet.coins > 0) {
         pet.coins--;
-        pet.fullness = Math.min(100, pet.fullness + 50);
-        pet.clean = Math.max(0, pet.clean - 25);
+        pet.fullness = Math.min(100, pet.fullness + 30);
+        pet.clean = Math.max(0, pet.clean - 30);
         saveGame();
         updateUI();
     } else {
